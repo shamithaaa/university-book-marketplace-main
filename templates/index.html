@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}University Book Marketplace - Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1><i class="fas fa-book-open"></i> Buy and Sell Textbooks on Campus</h1>
+        <p>Save money on textbooks by trading directly with other students</p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('routes.listings') }}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Browse Books
+            </a>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('routes.new_listing') }}" class="btn btn-secondary">
+                    <i class="fas fa-tag"></i> Sell a Book
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+                    <i class="fas fa-sign-in-alt"></i> Login to Sell
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature">
+        <i class="fas fa-money-bill-wave"></i>
+        <h3>Save Money</h3>
+        <p>Buy used textbooks directly from other students at lower prices than the bookstore</p>
+    </div>
+    <div class="feature">
+        <i class="fas fa-book"></i>
+        <h3>Find Course Books</h3>
+        <p>Easily search for books by course or department</p>
+    </div>
+    <div class="feature">
+        <i class="fas fa-comments"></i>
+        <h3>Direct Messaging</h3>
+        <p>Communicate directly with buyers and sellers to arrange transactions</p>
+    </div>
+    <div class="feature">
+        <i class="fas fa-university"></i>
+        <h3>Campus Community</h3>
+        <p>Trade exclusively with other students from your university</p>
+    </div>
+</section>
+
+{% if listings %}
+<section class="recent-listings">
+    <h2><i class="fas fa-fire"></i> Recently Listed Books</h2>
+    <div class="listings-grid">
+        {% for listing in listings %}
+            <div class="listing-card">
+                <div class="listing-image">
+                    {% if listing.image_path %}
+                        <img src="{{ listing.image_path }}" alt="{{ listing.title }}">
+                    {% else %}
+                        <div class="no-image"><i class="fas fa-image"></i> No Image</div>
+                    {% endif %}
+                </div>
+                <div class="listing-details">
+                    <h3>{{ listing.title }}</h3>
+                    <p class="author"><i class="fas fa-user-edit"></i> {{ listing.author }}</p>
+                    <p class="course"><i class="fas fa-graduation-cap"></i> {{ listing.course }}</p>
+                    <p class="price"><i class="fas fa-tag"></i> ${{ "%.2f"|format(listing.price) }}</p>
+                    <a href="{{ url_for('routes.view_listing', listing_id=listing.id) }}" class="btn btn-small">
+                        <i class="fas fa-info-circle"></i> View Details
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="center">
+        <a href="{{ url_for('routes.listings') }}" class="btn btn-secondary">
+            <i class="fas fa-th-list"></i> View All Listings
+        </a>
+    </div>
+</section>
+{% endif %}
+
+<section class="how-it-works">
+    <h2><i class="fas fa-question-circle"></i> How It Works</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <h3>Sign Up</h3>
+            <p><i class="fas fa-user-plus"></i> Create an account using your university email</p>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <h3>List or Browse</h3>
+            <p><i class="fas fa-list-alt"></i> Post your books for sale or browse available listings</p>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <h3>Connect</h3>
+            <p><i class="fas fa-comments"></i> Message other users to arrange a meeting</p>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <h3>Exchange</h3>
+            <p><i class="fas fa-exchange-alt"></i> Meet in person to exchange the book and payment</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

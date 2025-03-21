@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ listing.title }} - University Book Marketplace{% endblock %}
+
+{% block content %}
+<section class="listing-detail">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="{{ url_for('routes.listings') }}"><i class="fas fa-arrow-left"></i> Back to All Books</a>
+        </div>
+        
+        <div class="listing-container">
+            <div class="listing-image-container">
+                {% if listing.image_path %}
+                    <img src="{{ listing.image_path }}" alt="{{ listing.title }}" class="listing-image">
+                {% else %}
+                    <div class="no-image">
+                        <i class="fas fa-book-open fa-4x"></i>
+                        <p>No Image Available</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="listing-info">
+                <div class="listing-header">
+                    <h1>{{ listing.title }}</h1>
+                    <p class="author">by {{ listing.author }}</p>
+                </div>
+                
+                <div class="listing-price">
+                    <span class="price-value">${{ "%.2f"|format(listing.price) }}</span>
+                    <span class="status-badge {{ listing.status }}">{{ listing.status|capitalize }}</span>
+                </div>
+                
+                <div class="listing-meta">
+                    {% if listing.subject %}
+                        <div class="meta-item">
+                            <span class="meta-icon"><i class="fas fa-bookmark"></i></span>
+                            <div class="meta-content">
+                                <span class="label">Subject</span>
+                                <span class="value">{{ listing.subject }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if listing.course %}
+                        <div class="meta-item">
+                            <span class="meta-icon"><i class="fas fa-graduation-cap"></i></span>
+                            <div class="meta-content">
+                                <span class="label">Course</span>
+                                <span class="value">{{ listing.course }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="meta-item">
+                        <span class="meta-icon"><i class="fas fa-star"></i></span>
+                        <div class="meta-content">
+                            <span class="label">Condition</span>
+                            <span class="value">{{ listing.condition }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="meta-item">
+                        <span class="meta-icon"><i class="fas fa-user"></i></span>
+                        <div class="meta-content">
+                            <span class="label">Seller</span>
+                            <span class="value">{{ listing.seller.name }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="meta-item">
+                        <span class="meta-icon"><i class="fas fa-calendar-alt"></i></span>
+                        <div class="meta-content">
+                            <span class="label">Listed on</span>
+                            <span class="value">{{ listing.created_at.strftime('%B %d, %Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if listing.description %}
+                    <div class="listing-description">
+                        <h3><i class="fas fa-info-circle"></i> Description</h3>
+                        <p>{{ listing.description }}</p>
+                    </div>
+                {% endif %}
+                
+                <div class="listing-actions">
+                    {% if is_owner %}
+                        {% if listing.status == 'available' %}
+                            <a href="{{ url_for('routes.edit_listing', listing_id=listing.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-edit"></i> Edit Listing
+                            </a>
+                            <form action="{{ url_for('routes.delete_listing', listing_id=listing.id) }}" method="post" class="inline-form">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this listing?')">
+                                    <i class="fas fa-trash"></i> Delete Listing
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="status-message">
+                                This book is marked as <strong>{{ listing.status }}</strong>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        {% if session.get('user_id') %}
+                            {% if listing.status == 'available' %}
+                                <form action="{{ url_for('routes.buy_book', listing_id=listing.id) }}" method="post">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-shopping-cart"></i> Buy This Book
+                                    </button>
+                                </form>
+                                <button class="btn btn-secondary" id="contact-seller-btn">
+                                    <i class="fas fa-comments"></i> Contact Seller
+                                </button>
+                            {% else %}
+                                <div class="status-message">
+                                    <i class="fas fa-exclamation-circle"></i> Sorry, this book is no longer available
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt"></i> Login to Purchase
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if session.get('user_id') and not is_owner and listing.status == 'available' %}
+            <div class="message-form" id="contact-form" style="display: none;">
+                <h3><i class="fas fa-paper-plane"></i> Message the Seller</h3>
+                <form action="{{ url_for('routes.send_message') }}" method="post">
+                    <input type="hidden" name="receiver_id" value="{{ listing.seller_id }}">
+                    <input type="hidden" name="listing_id" value="{{ listing.id }}">
+                    <div class="form-group">
+                        <textarea name="content" rows="4" required placeholder="Write your message here..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+        {% endif %}
+        
+        {% if listing.status == 'available' and related_listings %}
+            <section class="related-listings">
+                <h2><i class="fas fa-books"></i> Similar Books</h2>
+                <div class="listings-grid">
+                    {% for related in related_listings %}
+                        <div class="listing-card">
+                            <div class="listing-image">
+                                {% if related.image_path %}
+                                    <img src="{{ related.image_path }}" alt="{{ related.title }}">
+                                {% else %}
+                                    <div class="no-image"><i class="fas fa-book"></i></div>
+                                {% endif %}
+                            </div>
+                            <div class="listing-details">
+                                <h3>{{ related.title }}</h3>
+                                <p class="author">{{ related.author }}</p>
+                                <p class="price">${{ "%.2f"|format(related.price) }}</p>
+                                <a href="{{ url_for('routes.view_listing', listing_id=related.id) }}" class="btn btn-small">View Details</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactBtn = document.getElementById('contact-seller-btn');
+        const contactForm = document.getElementById('contact-form');
+        
+        if (contactBtn && contactForm) {
+            contactBtn.addEventListener('click', function() {
+                contactForm.style.display = contactForm.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+    });
+</script>
+{% endblock %}

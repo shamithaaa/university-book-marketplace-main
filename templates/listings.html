@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Listings - University Book Marketplace{% endblock %}
+{% block content %}
+    <section class="listings">
+        <div class="container">
+            <h1><i class="fas fa-book-open"></i> All Listings</h1>
+            <ul id="books-list">
+                {% for listing in listings %}
+                    <li>
+                        <div class="book-info">
+                            <div class="book-title">{{ listing.title }}</div>
+                            <div class="book-author">by {{ listing.author }}</div>
+                            <div class="book-price">${{ "%.2f"|format(listing.price) }}</div>
+                            <span class="listing-date">
+                                <i class="fas fa-calendar-alt"></i>
+                                {{ listing.created_at.strftime('%b %d') if listing.created_at else 'N/A' }}
+                            </span>
+                        </div>
+                        <div class="book-actions">
+                            <a href="{{ url_for('routes.view_listing', listing_id=listing.id) }}" class="btn">View</a>
+                        </div>
+                    </li>
+                {% else %}
+                    <li>No listings available.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+{% endblock %}
